@@ -1,0 +1,105 @@
+{
+  "formatVersion": 4,
+  "resolvingDate": "2019-07-18T11:42:50.987Z",
+  "developmentTree": [
+    {
+      "id": "",
+      "package": "",
+      "version": "",
+      "tarball": "",
+      "children": [
+        "zE_GcBf400",
+        "1_KDtQxm00",
+        "YErJVWas00",
+        "znkv5xg400"
+      ],
+      "dependencies": [
+        "zE_GcBf400",
+        "1_KDtQxm00",
+        "YErJVWas00"
+      ]
+    },
+    {
+      "id": "1_KDtQxm00",
+      "package": "colors",
+      "version": "1.3.3",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/colors/-/colors-1.3.3.tgz"
+    },
+    {
+      "id": "YErJVWas00",
+      "package": "node-workers-pool",
+      "version": "1.1.3",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/node-workers-pool/-/node-workers-pool-1.1.3.tgz"
+    },
+    {
+      "id": "zE_GcBf400",
+      "package": "argparse",
+      "version": "1.0.10",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/argparse/-/argparse-1.0.10.tgz",
+      "dependencies": [
+        "znkv5xg400"
+      ]
+    },
+    {
+      "id": "znkv5xg400",
+      "package": "sprintf-js",
+      "version": "1.0.3",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/sprintf-js/-/sprintf-js-1.0.3.tgz"
+    }
+  ],
+  "productionTree": [
+    {
+      "id": "",
+      "package": "",
+      "version": "",
+      "tarball": "",
+      "children": [
+        "zE_GcBf400",
+        "1_KDtQxm00",
+        "YErJVWas00"
+      ],
+      "dependencies": [
+        "zE_GcBf400",
+        "1_KDtQxm00",
+        "YErJVWas00"
+      ]
+    },
+    {
+      "id": "1_KDtQxm00",
+      "package": "colors",
+      "version": "1.3.3",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/colors/-/colors-1.3.3.tgz"
+    },
+    {
+      "id": "YErJVWas00",
+      "package": "node-workers-pool",
+      "version": "1.1.3",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/node-workers-pool/-/node-workers-pool-1.1.3.tgz"
+    },
+    {
+      "id": "mKdcLnVD00",
+      "package": "sprintf-js",
+      "version": "1.0.3",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/sprintf-js/-/sprintf-js-1.0.3.tgz"
+    },
+    {
+      "id": "zE_GcBf400",
+      "package": "argparse",
+      "version": "1.0.10",
+      "tarball": "https://repo.dev.wixpress.com/artifactory/api/npm/npm-repos/argparse/-/argparse-1.0.10.tgz",
+      "children": [
+        "mKdcLnVD00"
+      ],
+      "dependencies": [
+        "mKdcLnVD00"
+      ]
+    }
+  ],
+  "sourcePackageJson": {
+    "dependencies": {
+      "argparse": "^1.0.10",
+      "colors": "^1.3.3",
+      "node-workers-pool": "^1.1.3"
+    }
+  }
+}

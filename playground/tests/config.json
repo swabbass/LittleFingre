@@ -1,0 +1,21 @@
+{
+  "workersData": {
+    mockServerPort: (workerNumber) => {
+      return 8000 + workerNumber;
+    },
+    customExtension: (worker) => {
+            return `w${worker}`
+    }
+  },
+
+
+  "default": {
+    "global.port": 2480
+  },
+  "suits": {
+    "e2e/f*": {
+      "global.port": 7823
+
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "formatVersion": 4,
+  "resolvingDate": "2019-06-20T10:47:54.449Z",
+  "developmentTree": [
+    {
+      "id": "",
+      "package": "",
+      "version": "",
+      "tarball": ""
+    }
+  ],
+  "productionTree": [
+    {
+      "id": "",
+      "package": "",
+      "version": "",
+      "tarball": ""
+    }
+  ],
+  "sourcePackageJson": {
+  }
+}
