@@ -11,7 +11,7 @@ const log = (str) => !littleFinger.SILENT && console.log(str);
 let indentLevel = 0;
 
 
-const _its = [];
+const _its = {};
 
 const summary = {success: 0, fail: 0, disabled: 0};
 
@@ -37,7 +37,7 @@ function _performIt(desc, callback) {
 
 const it = (desc, callback) => {
     log(`${"ADDED".bgYellow.black} ${desc}`);
-    _its.push({desc, callback});
+    _its[desc] = callback;
 };
 
 const xit = (desc, callback) => {
@@ -52,20 +52,14 @@ const describe = (suiteName, testCallback, options) => {
     suits[suiteName] = testCallback;
 };
 
-function runTests(execution) {
-    if (execution === 'serial') {
-        console.log('\n');
-        console.log("Running tests in serial...");
-        console.log('\n');
-        _its.forEach(({desc, callback}) => _performIt(desc, callback));
-    } else {
-        console.error("running tests in parallel not supported");
-    }
+function runTest(itDesc) {
+    Object.keys(_its).forEach((key) => {
+        if (key === itDesc) _performIt(key, _its[key]);
+    });
 }
 
 const end = () => {
-    const { workerData, parentPort } = require('worker_threads');
-    console.log(JSON.stringify(workerData));
+
     // runTests(__execution);
     // log(`\n${repeat('.', 60)}\n`);
     // log('Test summary:\n');
@@ -74,10 +68,9 @@ const end = () => {
     // log(`  Disabled: ${summary.disabled}\n\n`.gray);
     // if (summary.fail > 0) process.exit(1);
     // process.exit(0);
-    parentPort.postMessage({ hello: workerData });
 };
 
 
-const dsl = {expect, it, xit, describe, end, _its, /*,group, beforeEach, beforeAll*/};
+const dsl = {expect, it, xit, describe, end, _its, runTest /*,group, beforeEach, beforeAll*/};
 
 module.exports = Object.assign(littleFinger, dsl);

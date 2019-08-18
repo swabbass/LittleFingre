@@ -42,24 +42,37 @@ const __testSuites = __args.files;
 const __suitesConfig = __args.config;
 const __testSuitePaths = __testSuites.map(s => `${__cwd}/${s}`);
 const {Worker} = require('worker_threads');
+const itsPerSuite = {};
 
-function runService(workerData) {
-
+function createWorkerAndWaitForMessages(id, workerData) {
     const worker = new Worker(path.resolve(`${__dirname}/suite_worker.js`), {workerData});
     worker.on('message', (message) => {
-        console.log("MainREC: " + JSON.stringify(message));
-        const {type, data} = message;
-        switch (type) {
-            case 'ack_init':
-                worker.postMessage({type: 'data', data: {fileName: 'filenameeee', data}});
+        console.log(`MainREC-${id}: ` + JSON.stringify(message));
+        const {action, data} = message;
+        switch (action) {
+            case 'ready':
+                if (!itsPerSuite[workerData.suitePath]) {
+                    console.log("setting its here ");
+                    itsPerSuite[workerData.suitePath] = data;
+                }
+                const itToRun = itsPerSuite[workerData.suitePath].pop();
+                if (itToRun) {
+                    worker.postMessage({action: 'run', data: itToRun, worker: id});
+                }
+                console.log("finished");
                 break;
-            default:
-                console.log('message type not supported');
+            case 'finished':
+                break;
         }
 
     });
-    worker.postMessage({type: 'init', data: workerData})
+    worker.postMessage({action: 'prepare', data: workerData})
+}
 
+function runService(workerData) {
+    for (let i = 0; i < 2; i++) {
+        createWorkerAndWaitForMessages(i, workerData);
+    }
 }
 
 
