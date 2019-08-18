@@ -155,3 +155,13 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+playground/.idea/misc.xml
+playground/.idea/modules.xml
+playground/.idea/sbt.xml
+playground/.idea/vcs.xml
+playground/.idea/workspace.xml
+proj/.idea/misc.xml
+proj/.idea/modules.xml
+proj/.idea/sbt.xml
+proj/.idea/vcs.xml
+proj/.idea/workspace.xml
