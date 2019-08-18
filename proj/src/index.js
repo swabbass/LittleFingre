@@ -64,17 +64,20 @@ function runTests(execution) {
 }
 
 const end = () => {
-    runTests(__execution);
-    log(`\n${repeat('.', 60)}\n`);
-    log('Test summary:\n');
-    log(`  Success: ${summary.success}`.green);
-    log(`  Fail: ${summary.fail}`.red);
-    log(`  Disabled: ${summary.disabled}\n\n`.gray);
-    if (summary.fail > 0) process.exit(1);
-    process.exit(0);
+    const { workerData, parentPort } = require('worker_threads');
+    console.log(JSON.stringify(workerData));
+    // runTests(__execution);
+    // log(`\n${repeat('.', 60)}\n`);
+    // log('Test summary:\n');
+    // log(`  Success: ${summary.success}`.green);
+    // log(`  Fail: ${summary.fail}`.red);
+    // log(`  Disabled: ${summary.disabled}\n\n`.gray);
+    // if (summary.fail > 0) process.exit(1);
+    // process.exit(0);
+    parentPort.postMessage({ hello: workerData });
 };
 
 
-const dsl = {expect, it, xit, describe, end/*,group, beforeEach, beforeAll*/};
+const dsl = {expect, it, xit, describe, end, _its, /*,group, beforeEach, beforeAll*/};
 
 module.exports = Object.assign(littleFinger, dsl);

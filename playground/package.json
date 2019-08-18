@@ -7,7 +7,7 @@
   },
   "scripts": {
     "pwd": "pwd",
-    "test": "node_modules/LittleFinger/src/runner.js --files tests/b.js --config x"
+    "test": "./node_modules/LittleFinger/src/runner.js --files tests/b.js --config x"
   },
   "keywords": [],
   "author": "",

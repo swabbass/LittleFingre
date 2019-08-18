@@ -1,6 +1,6 @@
 #!/usr/bin/env node --experimental-worker
-const TestsWorker = require('./workers');
-const self = require('./index');
+const path = require('path');
+
 global.LilRunner = {
     config: {
         ip: 2480,
@@ -41,16 +41,36 @@ const __cwd = process.cwd();
 const __testSuites = __args.files;
 const __suitesConfig = __args.config;
 const __testSuitePaths = __testSuites.map(s => `${__cwd}/${s}`);
+const {Worker} = require('worker_threads');
+
+function runService(workerData) {
+
+    const worker = new Worker(path.resolve(`${__dirname}/suite_worker.js`), {workerData});
+    worker.on('message', (message) => {
+        console.log("MainREC: " + JSON.stringify(message));
+        const {type, data} = message;
+        switch (type) {
+            case 'ack_init':
+                worker.postMessage({type: 'data', data: {fileName: 'filenameeee', data}});
+                break;
+            default:
+                console.log('message type not supported');
+        }
+
+    });
+    worker.postMessage({type: 'init', data: workerData})
+
+}
+
+
 console.log(JSON.stringify(__testSuitePaths));
 // console.log(`${__cwd}/${__testSuites[0]}`);
 if (__args.parallel) {
-    const testWorker = new TestsWorker();
     global.__execution = 'parallel';
     console.log('parallel not support');
 } else {
-    const testWorker = new TestsWorker(1);
     global.__execution = 'serial';
-    __testSuitePaths.forEach((suite) => require(suite));
-    testWorker.enqueue(self.end, result => console.log(`worker finished: ${result}`), err => console.error(err))
-    // require(__testSuitePaths[0]);
+    const workerData = {'suitePath': __testSuitePaths[0], 'execution': __execution};
+    runService(workerData)
+
 }

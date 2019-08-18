@@ -16,3 +16,5 @@ it("should it 0/5 === 0 is true", () => {
 xit("should xit not work", () => {
     expect(1 === 2);
 });
+
+end();
