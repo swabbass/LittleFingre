@@ -1,7 +1,7 @@
 const {parentPort} = require('worker_threads');
 const LittleFinger = require(`${__dirname}/index.js`);
 let currentSuitePath = undefined;
-parentPort.on('message', (message) => {
+parentPort.on('message', async (message) => {
     const {action, data} = message;
     console.log("REC: " + JSON.stringify(message));
     switch (action) {
@@ -13,7 +13,7 @@ parentPort.on('message', (message) => {
             break;
         case 'run':
             if (LittleFinger._its[data]) {
-                LittleFinger.runTest(data);
+                await LittleFinger.runTest(data);
             }
             parentPort.postMessage({action: `ready`, data: Object.keys(LittleFinger._its)});
             break;

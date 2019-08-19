@@ -23,9 +23,9 @@ const expect = (expression) => {
     }
 };
 
-function _performIt(desc, callback) {
+async function _performIt(desc, callback) {
     try {
-        callback();
+        await callback();
         log(`${indent(indentLevel + 1)}${' OK '.bgGreen.black} ${desc.green}`);
         summary.success++;
     } catch (e) {
@@ -52,10 +52,9 @@ const describe = (suiteName, testCallback, options) => {
     suits[suiteName] = testCallback;
 };
 
-function runTest(itDesc) {
-    Object.keys(_its).forEach((key) => {
-        if (key === itDesc) _performIt(key, _its[key]);
-    });
+async function runTest(itDesc) {
+    const itToRun = _its[itDesc];
+    await _performIt(itDesc, itToRun);
 }
 
 const end = () => {
