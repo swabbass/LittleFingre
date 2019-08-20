@@ -5,7 +5,7 @@ function sleep(ms) {
 
 
 for (let i = 0; i < 100; i++) {
-    it(`should it 0/5 === 0 is true ${i}`,async () => {
+    it(`test-${i} from B`,async () => {
        await sleep(1000);
         expect(1 === 1);
     });
