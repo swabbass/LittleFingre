@@ -11,7 +11,7 @@ const log = (str) => !littleFinger.SILENT && console.log(str);
 let indentLevel = 0;
 
 
-const _its = {};
+const _tests = new Map();
 
 const summary = {success: 0, fail: 0, disabled: 0};
 
@@ -37,7 +37,7 @@ async function _performIt(desc, callback) {
 
 const it = (desc, callback) => {
     log(`${"ADDED".bgYellow.black} ${desc}`);
-    _its[desc] = callback;
+    _tests.set(desc, callback);
 };
 
 const xit = (desc, callback) => {
@@ -45,6 +45,9 @@ const xit = (desc, callback) => {
     summary.disabled++;
 };
 
+const clearIts = () => {
+    _tests.clear()
+};
 var suits;
 
 const describe = (suiteName, testCallback, options) => {
@@ -52,9 +55,9 @@ const describe = (suiteName, testCallback, options) => {
     suits[suiteName] = testCallback;
 };
 
-async function runTest(itDesc) {
-    const itToRun = _its[itDesc];
-    await _performIt(itDesc, itToRun);
+async function runTest(testId, testCbk = undefined) {
+    const itToRun = testCbk ? testCbk : _tests.get(testId);
+    await _performIt(testId, itToRun);
 }
 
 const end = () => {
@@ -70,6 +73,6 @@ const end = () => {
 };
 
 
-const dsl = {expect, it, xit, describe, end, _its, runTest /*,group, beforeEach, beforeAll*/};
+const dsl = {expect, it, xit, describe, end, _tests, runTest, clearIts /*,group, beforeEach, beforeAll*/};
 
 module.exports = Object.assign(littleFinger, dsl);

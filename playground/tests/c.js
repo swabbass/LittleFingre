@@ -5,8 +5,8 @@ function sleep(ms) {
 
 
 for (let i = 0; i < 10; i++) {
-    it(`test-${i} from B`,async () => {
-        await sleep(1000);
+    it(`test-${i} from C`,async () => {
+       await sleep(1000);
         expect(1 === 1);
     });
 }

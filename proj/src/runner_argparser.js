@@ -30,6 +30,7 @@ function initArgParser() {
         ['--log-level'],
         {
             help: 'sets log level 0 calm, 1 mainiac, otherwise calm',
+            type: 'int',
             defaultValue: LogLevel.CALM
         }
     );

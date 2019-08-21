@@ -20,8 +20,47 @@ const __cwd = process.cwd();
 const __testSuites = __args.files;
 const __suitesConfig = __args.config;
 const __testSuitePaths = __testSuites.map(s => `${__cwd}/${s}`);
-const itsPerSuite = {};
+const testIdsPerSuite = new Map();
+const workers = [];
+const workersData = {
+    suites: __testSuitePaths,
+    'execution': __execution,
+    logLevel: _.logLevel
+};
 
+function findRunningTestWithTheMostTests() {
+    const sizesArray = [...testIdsPerSuite.entries()].map(([key, value]) => [key, value.length]);
+    return sizesArray.reduce(function (p, v) {
+        return (p[1] > v[1] ? p : v);
+    })[0];
+}
+
+function findNextSuiteToRun() {
+    const runningSuitesCnt = testIdsPerSuite.size;
+    const suitesCnt = workersData.suites.length;
+
+    //no suites waiting or running to share then just finish
+    if (suitesCnt === 0) {
+        if (runningSuitesCnt === 0) {
+            return undefined;
+        } else {
+            return findRunningTestWithTheMostTests();
+        }
+    } else {
+        if (runningSuitesCnt === 0) {
+            return workersData.suites.pop();
+        } else {
+            //simple heuristic condition (
+            if (suitesCnt >= runningSuitesCnt) {
+                //maybe its better to use one of waiting suites
+                return workersData.suites.pop();
+            } else {
+                //Simple way for now is just to take the running task with max number of tests remaining to share (not accurate and not good) but simple stupid
+                return findRunningTestWithTheMostTests();
+            }
+        }
+    }
+}
 
 function createWorkerAndWaitForMessages(id, workerData) {
     const path = require('path');
@@ -34,19 +73,26 @@ function createWorkerAndWaitForMessages(id, workerData) {
     });
     worker.on('message', (message) => {
         const {action, data} = message;
-        _.maniac(`MasterWorker-From-${id}: ${action}`);
+        _.maniac(`MasterWorker-From-${id}: ${JSON.stringify(message)}`);
         switch (action) {
             case 'ready':
-                if (!itsPerSuite[workerData.suitePath]) {
-                    _.maniac(`MasterWorker-From-${id} setting its here`);
-                    itsPerSuite[workerData.suitePath] = data;
+                if (!testIdsPerSuite.has(data.suitePath)) {
+                    _.maniac(`MasterWorker-From-${id} tests for suite ${data.suitePath} ${'added'.bgBlue.black}`);
+                    testIdsPerSuite.set(data.suitePath, data.testsIds);
                 }
-                const itToRun = itsPerSuite[workerData.suitePath].pop();
-                if (itToRun) {
-                    worker.postMessage({action: 'run', data: itToRun, worker: id});
+                const testIdToRun = testIdsPerSuite.get(data.suitePath).pop();
+                if (testIdToRun) {
+                    worker.postMessage({action: 'run', data: testIdToRun, worker: id});
                 } else {
-                    _.calm(`Worker-${id} Finished and terminating`.rainbow);
-                    worker.terminate()
+                    testIdsPerSuite.delete(data.suitePath);
+                    const suitePathToRun = findNextSuiteToRun();
+                    if (suitePathToRun === undefined) {
+                        _.calm(`Worker-${id} Finished and terminating`.rainbow);
+                        worker.terminate()
+                    } else {
+                        worker.postMessage({action: 'prepare', data: {suitePath: suitePathToRun}})
+                    }
+
                 }
                 break;
             case 'finished':
@@ -54,17 +100,26 @@ function createWorkerAndWaitForMessages(id, workerData) {
         }
 
     });
-    worker.postMessage({action: 'prepare', data: workerData})
+    return worker;
 }
 
-function runService(workerData) {
+function runService(workersData) {
     const os = require('os');
-    const cpuCount = workerData.execution === Execution.PARALLEL ? os.cpus().length : 1;
-    _.calm(`Execution type: ${workerData.execution === Execution.PARALLEL ? "Parallel".rainbow : "Serial".bgCyan.black} Running with ${cpuCount} Workers`);
+    const cpuCount = workersData.execution === Execution.PARALLEL ? os.cpus().length : 1;
+    _.calm(`Execution type: ${workersData.execution === Execution.PARALLEL ? "Parallel".rainbow : "Serial".bgCyan.black} Running with ${cpuCount} Workers`);
     for (let i = 0; i < cpuCount; i++) {
-        createWorkerAndWaitForMessages(i, {...workerData});
+        workers[i] = createWorkerAndWaitForMessages(i, {...workersData});
+    }
+    if (workersData.suites.length < cpuCount) {
+        /// just beat it
+    }
+    for (let i = 0; i < workers.length; i++) {
+        const suitePath = workersData.suites.pop();
+        if (suitePath) {
+            workers[i].postMessage({action: 'prepare', data: {suitePath}})
+        }
     }
 }
 
-const workerData = {'suitePath': __testSuitePaths[0], 'execution': __execution, logLevel: _.logLevel};
-runService(workerData);
+
+runService(workersData);

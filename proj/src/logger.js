@@ -1,11 +1,12 @@
 const {LogLevel} = require(`${__dirname}/constants.js`);
+
 class Logger {
     constructor(logLevel) {
         this.logLevel = this._calculateLogLevel(logLevel);
     }
 
     calm(something) {
-         console.log(something);
+        console.log(something);
     }
 
     maniac(something) {
