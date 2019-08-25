@@ -11,7 +11,7 @@ const log = (str) => !littleFinger.SILENT && console.log(str);
 let indentLevel = 0;
 
 
-const _tests = new Map();
+const _tests = {};
 
 const summary = {success: 0, fail: 0, disabled: 0};
 
@@ -36,8 +36,8 @@ async function _performIt(desc, callback) {
 }
 
 const it = (desc, callback) => {
-    log(`${"ADDED".bgYellow.black} ${desc}`);
-    _tests.set(desc, callback);
+    _tests[desc] = callback;
+    log(`${"ADDED".bgRed.black} ${desc}`);
 };
 
 const xit = (desc, callback) => {
@@ -46,7 +46,16 @@ const xit = (desc, callback) => {
 };
 
 const clearIts = () => {
-    _tests.clear()
+    log('clear called');
+    for (const prop in _tests) {
+        if (_tests.hasOwnProperty(prop)) {
+            delete _tests[prop];
+        }
+    }
+};
+
+const getTests = () => {
+    return _tests;
 };
 var suits;
 
@@ -56,7 +65,7 @@ const describe = (suiteName, testCallback, options) => {
 };
 
 async function runTest(testId, testCbk = undefined) {
-    const itToRun = testCbk ? testCbk : _tests.get(testId);
+    const itToRun = testCbk ? testCbk : _tests[testId];
     await _performIt(testId, itToRun);
 }
 
@@ -73,6 +82,6 @@ const end = () => {
 };
 
 
-const dsl = {expect, it, xit, describe, end, _tests, runTest, clearIts /*,group, beforeEach, beforeAll*/};
+const dsl = {expect, it, xit, describe, end, getTests, runTest, clearIts /*,group, beforeEach, beforeAll*/};
 
 module.exports = Object.assign(littleFinger, dsl);

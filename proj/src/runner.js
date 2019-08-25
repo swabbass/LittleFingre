@@ -20,7 +20,7 @@ const __cwd = process.cwd();
 const __testSuites = __args.files;
 const __suitesConfig = __args.config;
 const __testSuitePaths = __testSuites.map(s => `${__cwd}/${s}`);
-const testIdsPerSuite = new Map();
+const testIdsPerSuite = {};
 const workers = [];
 const workersData = {
     suites: __testSuitePaths,
@@ -29,14 +29,15 @@ const workersData = {
 };
 
 function findRunningTestWithTheMostTests() {
-    const sizesArray = [...testIdsPerSuite.entries()].map(([key, value]) => [key, value.length]);
+    const map = new Map(testIdsPerSuite);
+    const sizesArray = [...map.entries()].map(([key, value]) => [key, value.length]);
     return sizesArray.reduce(function (p, v) {
         return (p[1] > v[1] ? p : v);
     })[0];
 }
 
 function findNextSuiteToRun() {
-    const runningSuitesCnt = testIdsPerSuite.size;
+    const runningSuitesCnt = Object.keys(testIdsPerSuite).length;
     const suitesCnt = workersData.suites.length;
 
     //no suites waiting or running to share then just finish
@@ -76,17 +77,19 @@ function createWorkerAndWaitForMessages(id, workerData) {
         _.maniac(`MasterWorker-From-${id}: ${JSON.stringify(message)}`);
         switch (action) {
             case 'ready':
-                if (!testIdsPerSuite.has(data.suitePath)) {
-                    _.maniac(`MasterWorker-From-${id} tests for suite ${data.suitePath} ${'added'.bgBlue.black}`);
-                    testIdsPerSuite.set(data.suitePath, data.testsIds);
+                if (!testIdsPerSuite[data.suitePath]) {
+                    _.calm(`MasterWorker-From-${id} tests for suite ${data.suitePath} ${'added'.bgBlue.black}`);
+                    testIdsPerSuite[data.suitePath] = data.testsIds;
                 }
-                const testIdToRun = testIdsPerSuite.get(data.suitePath).pop();
+                _.calm(testIdsPerSuite);
+                const testIdToRun = testIdsPerSuite[data.suitePath].pop();
+                _.calm(`trying to run test ${testIdToRun} on worker-${id}`);
                 if (testIdToRun) {
                     worker.postMessage({action: 'run', data: testIdToRun, worker: id});
                 } else {
-                    testIdsPerSuite.delete(data.suitePath);
+                    delete testIdsPerSuite[data.suitePath];
                     const suitePathToRun = findNextSuiteToRun();
-                    if (suitePathToRun === undefined) {
+                    if (suitePathToRun === undefined) {      
                         _.calm(`Worker-${id} Finished and terminating`.rainbow);
                         worker.terminate()
                     } else {

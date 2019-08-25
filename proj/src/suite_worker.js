@@ -6,20 +6,22 @@ const {logLevel, worker_id} = workerData;
 const _ = new Logger(logLevel);
 LittleFinger.SILENT = false && logLevel === LogLevel.CALM;
 
+let currentSuite = undefined;
+
 function loadSuite(suitePath) {
     LittleFinger.clearIts();
     require(suitePath);
-    return {
+    const result = {
         path: suitePath,
-        tests: LittleFinger._tests,
+        tests: LittleFinger.getTests(),
         beforeAll: undefined,
         beforeEach: undefined,
         afterAll: undefined,
         afterEach: undefined
-    }
+    };
+    return result;
 }
 
-let currentSuite = undefined;
 parentPort.on('message', async (message) => {
     const {action, data} = message;
     _.maniac(`Worker-${worker_id}: ` + JSON.stringify(message));
@@ -27,21 +29,23 @@ parentPort.on('message', async (message) => {
         case 'prepare':
             const {suitePath} = data;
             currentSuite = loadSuite(suitePath);
-            _.calm(JSON.stringify(currentSuite));
-            parentPort.postMessage({
+            const message1 = {
                 action: `ready`,
-                data: {testsIds: [...currentSuite.tests.keys()], suitePath: currentSuite.path}
-            });
+                data: {testsIds: Object.keys(currentSuite.tests), suitePath: currentSuite.path}
+            };
+            console.log(message1);
+            parentPort.postMessage(message1);
             break;
         case 'run':
-            if (currentSuite.tests.get(data)) {
-                _.calm(`Run ${data} from suite ${currentSuite.parent} on ${`worker-${worker_id}`.bgRed.black}`);
-                await LittleFinger.runTest(data, currentSuite.tests.get(data));
-                currentSuite.tests.delete(data);
+            _.calm(`try running ${data} on worker-${worker_id}`);
+            if (currentSuite.tests[data]) {
+                _.calm(`Run ${data} from suite ${currentSuite.suitePath} on ${`worker-${worker_id}`.bgRed.black}`);
+                await LittleFinger.runTest(data, currentSuite.tests[data]);
+                delete currentSuite.tests[data];
             }
             parentPort.postMessage({
                 action: `ready`,
-                data: {testsIds: [...currentSuite.tests.keys()], suitePath: currentSuite.path}
+                data: {testsIds: Object.keys(currentSuite.tests), suitePath: currentSuite.path}
             });
             break;
         default:
